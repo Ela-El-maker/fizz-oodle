@@ -1,6 +1,7 @@
 # Interface Contract
 
 This canonical contract file lists scheduler task names consumed by config validation.
+Canonical timezone reference: `Africa/Nairobi`.
 
 ## Registered task contracts
 

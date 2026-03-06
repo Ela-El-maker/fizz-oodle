@@ -1,12 +1,21 @@
-name: Stage7 CI
+name: CI
 
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  stage7-ci:
+  backend-quality:
+    name: Backend Quality
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -22,7 +31,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-
       redis:
         image: redis:7
         ports:
@@ -32,7 +40,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/market_intel_test
       REDIS_URL: redis://localhost:6379/0
@@ -40,7 +47,6 @@ jobs:
       INTERNAL_API_KEY: internal-test-key
       EMAIL_DRY_RUN: "true"
       LLM_MODE: "off"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,18 +55,23 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Canonical guardrails
-        run: |
-          python scripts/validate_configs.py
-          python scripts/check_drift.py
+      - name: Validate config contracts
+        run: python scripts/validate_configs.py
 
-      - name: Compose profile validation
+      - name: Run drift guards
+        run: python scripts/check_drift.py
+
+      - name: Run backend tests
+        run: python -m pytest -q
+
+      - name: Validate docker compose configs
         env:
           APP_IMAGE: ghcr.io/example/fizz-oodle:test
           INTERNAL_API_KEY: internal-test-key
@@ -70,11 +81,34 @@ jobs:
           docker compose -f docker-compose.staging.yml config >/dev/null
           docker compose -f docker-compose.prod.yml config >/dev/null
 
-      - name: Tests
-        run: python -m pytest -q
-
-      - name: Basic dependency security scan
+      - name: Dependency security scan
         continue-on-error: true
         run: |
           pip install pip-audit
           pip-audit -r requirements.txt
+
+  frontend-quality:
+    name: Frontend Quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
