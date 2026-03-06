@@ -1,0 +1,68 @@
+{% macro section_header(title, subtitle='') -%}
+  <h2 class="section-title">{{ title }}</h2>
+  {% if subtitle %}<p class="section-subtitle">{{ subtitle }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro confidence_badge(level) -%}
+  {% set v = (level or 'medium')|lower %}
+  {% if v == 'high' %}
+    <span class="badge badge-high">High confidence</span>
+  {% elif v == 'low' %}
+    <span class="badge badge-low">Low confidence</span>
+  {% else %}
+    <span class="badge badge-medium">Medium confidence</span>
+  {% endif %}
+{%- endmacro %}
+
+{% macro kpi_row(items) -%}
+  <table role="presentation" class="kpi-grid" cellpadding="0" cellspacing="0">
+    <tr>
+      {% for item in items %}
+      <td class="kpi-cell">
+        <div class="kpi">
+          <div class="kpi-label">{{ item.label }}</div>
+          <div class="kpi-value">{{ item.value }}</div>
+        </div>
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
+{%- endmacro %}
+
+{% macro source_links(links) -%}
+  {% if links %}
+  <ul class="source-list">
+    {% for item in links %}
+    <li>
+      {% if item.url %}<a href="{{ item.url }}">{{ item.label or item.url }}</a>{% else %}{{ item.label }}{% endif %}
+      {% if item.meta %}<span class="muted"> · {{ item.meta }}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+{%- endmacro %}
+
+{% macro explainer(term, meaning) -%}
+  <div class="callout">
+    <strong>{{ term }}</strong>
+    <span class="muted">{{ meaning }}</span>
+  </div>
+{%- endmacro %}
+
+{% macro story_card(item) -%}
+  <div class="story">
+    <div class="story-head">
+      <span class="lane {% if (item.lane or '')|lower == 'global outside' %}lane-global{% else %}lane-kenya{% endif %}">{{ item.lane or 'Kenya Core' }}</span>
+      {% if item.impact_score is not none %}<span class="impact">Impact {{ item.impact_score }}</span>{% endif %}
+    </div>
+    <div class="story-body">
+      <h3>{{ item.title }}</h3>
+      {% if item.confidence %}{{ confidence_badge(item.confidence) }}{% endif %}
+      {% if item.what_happened %}<p><strong>What happened:</strong> {{ item.what_happened }}</p>{% endif %}
+      {% if item.why_matters %}<p><strong>Why it matters in Kenya:</strong> {{ item.why_matters }}</p>{% endif %}
+      {% if item.who_affected %}<p><strong>Who is affected:</strong> {{ item.who_affected }}</p>{% endif %}
+      {% if item.watch_next %}<p><strong>What to watch next:</strong> {{ item.watch_next }}</p>{% endif %}
+      {{ source_links(item.sources or []) }}
+    </div>
+  </div>
+{%- endmacro %}

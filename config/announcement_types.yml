@@ -1,0 +1,23 @@
+version: 1
+announcement_types:
+  - dividend
+  - earnings
+  - regulatory_filing
+  - rights_issue
+  - merger_acquisition
+  - board_change
+  - profit_warning
+  - agm_egm
+  - trading_suspension
+  - other
+classifier_keywords:
+  dividend: [dividend, payout, ex-dividend, book closure]
+  earnings: [earnings, results, profit, annual report, quarter]
+  regulatory_filing: [filing, disclosure, compliance, circular]
+  rights_issue: [rights issue, share offer, rights offer]
+  merger_acquisition: [acquisition, merger, takeover, buyout]
+  board_change: [board, director, ceo, management change, appointment]
+  profit_warning: [profit warning, outlook downgrade, guidance cut]
+  agm_egm: [agm, egm, annual general meeting, extraordinary general meeting]
+  trading_suspension: [trading suspension, suspended, resumed trading]
+  other: [other]

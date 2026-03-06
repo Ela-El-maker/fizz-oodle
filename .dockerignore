@@ -1,0 +1,41 @@
+# VCS
+.git
+.gitignore
+
+# Python
+.venv
+venv
+__pycache__
+.pytest_cache
+.mypy_cache
+*.pyc
+*.pyo
+*.pyd
+
+# Node/frontend build artifacts
+node_modules
+dashboard/node_modules
+dashboard/.next
+dashboard/out
+*.tsbuildinfo
+
+# Local env/secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+dashboard/.env.local
+dashboard/.env.*
+!dashboard/.env.example
+
+# Runtime outputs
+logs
+tmp
+dist
+build
+docs/evidence
+*.log
+
+# Misc
+.DS_Store
+Thumbs.db

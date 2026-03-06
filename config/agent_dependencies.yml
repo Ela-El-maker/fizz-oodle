@@ -1,0 +1,37 @@
+version: 1
+agents:
+  briefing:
+    key: A
+    label: Agent A (Prices)
+    depends_on: []
+  announcements:
+    key: B
+    label: Agent B (Announcements)
+    depends_on: []
+  sentiment:
+    key: C
+    label: Agent C (Sentiment)
+    depends_on: []
+  analyst:
+    key: D
+    label: Agent D (Analyst)
+    depends_on:
+      - briefing
+      - announcements
+      - sentiment
+  archivist:
+    key: E
+    label: Agent E (Patterns)
+    depends_on:
+      - analyst
+  narrator:
+    key: F
+    label: Agent F (Narrator)
+    depends_on:
+      - analyst
+      - archivist
+  email_validation:
+    key: EMAIL
+    label: Email Dispatch
+    depends_on:
+      - narrator

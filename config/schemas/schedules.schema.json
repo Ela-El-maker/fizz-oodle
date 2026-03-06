@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "timezone", "schedules"],
+  "properties": {
+    "version": {"type": "integer", "minimum": 1},
+    "timezone": {"type": "string", "const": "Africa/Nairobi"},
+    "schedules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["schedule_key", "task_name", "timezone", "eat_cron", "utc_cron", "notes"],
+        "properties": {
+          "schedule_key": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "task_name": {"type": "string", "pattern": "^(agent_[a-z_]+\\.[a-z_]+|ops\\.[a-z_]+\\.[a-z_]+)$"},
+          "timezone": {"type": "string", "const": "Africa/Nairobi"},
+          "eat_cron": {"type": "string", "minLength": 5},
+          "utc_cron": {"type": "string", "minLength": 5},
+          "task_kwargs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": ["string", "number", "integer", "boolean", "null"]
+            }
+          },
+          "notes": {"type": "string", "minLength": 3}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Market Intel · Official UI</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #dbe4ee;
+      --blue: #2563eb;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --fail: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(1400px 600px at 20% -5%, #e8f0ff 0%, var(--bg) 45%);
+      color: var(--ink);
+      font-family: "Segoe UI", "Avenir Next", system-ui, sans-serif;
+    }
+    .shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 280px 1fr;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+      padding: 14px;
+    }
+    .sidebar {
+      position: sticky;
+      top: 12px;
+      height: fit-content;
+      display: grid;
+      gap: 10px;
+    }
+    .title { font-size: 20px; margin: 0 0 2px; }
+    .subtle { color: var(--muted); margin: 0; font-size: 13px; }
+    .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+    .main { display: grid; gap: 12px; }
+    .grid2 { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid3 { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (max-width: 1120px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .grid2, .grid3 { grid-template-columns: 1fr; }
+    }
+    h2 { margin: 0 0 8px; font-size: 16px; }
+    h3 { margin: 0 0 8px; font-size: 14px; }
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .status.ok { color: var(--ok); background: #e9f9ee; border-color: #bfe9cb; }
+    .status.warn { color: var(--warn); background: #fff4e5; border-color: #ffe0b2; }
+    .status.fail { color: var(--fail); background: #ffe8e8; border-color: #ffc9c9; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .stretch { width: 100%; }
+    input, select, button {
+      border: 1px solid #c8d3e0;
+      border-radius: 9px;
+      font-size: 13px;
+      padding: 8px 10px;
+      background: #fff;
+    }
+    button {
+      cursor: pointer;
+      border-color: #1e4fc2;
+      background: var(--blue);
+      color: white;
+      font-weight: 600;
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid #eef3f8;
+      padding: 7px 6px;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 600; font-size: 11px; }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 11px;
+      line-height: 1.45;
+      background: #f8fbff;
+      border: 1px solid #e7edf7;
+      border-radius: 8px;
+      padding: 8px;
+      max-height: 260px;
+      overflow: auto;
+    }
+    .linklist { display: grid; gap: 6px; }
+    a { color: #1d4ed8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .small { font-size: 12px; color: var(--muted); }
+    .kv { display: grid; gap: 6px; font-size: 13px; }
+    .kv div { display: flex; justify-content: space-between; gap: 8px; }
+    .kv b { color: var(--muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <section class="card">
+        <h1 class="title">Official UI</h1>
+        <p class="subtle">Market Intel Control Center (A–E)</p>
+      </section>
+
+      <section class="card">
+        <h2>Auth</h2>
+        <div class="row stretch">
+          <input id="apiKey" class="stretch mono" placeholder="X-API-Key" />
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="saveKeyBtn">Save Key</button>
+          <button id="reloadBtn">Reload</button>
+        </div>
+        <p class="small" style="margin:8px 0 0">Key is stored in browser localStorage for this host.</p>
+      </section>
+
+      <section class="card">
+        <h2>Quick Run</h2>
+        <div class="row"><button data-agent="briefing">Run A · Briefing</button></div>
+        <div class="row"><button data-agent="announcements">Run B · Announcements</button></div>
+        <div class="row"><button data-agent="sentiment">Run C · Sentiment</button></div>
+        <div class="row"><button data-agent="analyst">Run D · Analyst</button></div>
+        <div class="row"><button data-agent="archivist">Run E · Archivist</button></div>
+        <div class="row"><button data-validation="daily">Validate Email · Daily</button></div>
+        <div class="row"><button data-validation="weekly">Validate Email · Weekly</button></div>
+      </section>
+
+      <section class="card">
+        <h2>Admin Views</h2>
+        <div class="linklist small">
+          <a href="/admin/reports" target="_blank">Reports Admin</a>
+          <a href="/sources/health" target="_blank">Announcements Sources Health</a>
+          <a href="/sentiment/sources/health" target="_blank">Sentiment Sources Health</a>
+          <a href="/patterns/summary" target="_blank">Patterns Summary</a>
+          <a href="/metrics" target="_blank">Gateway Metrics</a>
+        </div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <h2>System Health</h2>
+          <span id="healthBadge" class="status">...</span>
+        </div>
+        <div id="healthMeta" class="small"></div>
+        <pre id="healthPre" style="margin-top:8px"></pre>
+      </section>
+
+      <section class="grid3">
+        <div class="card">
+          <h3>Reports (D)</h3>
+          <div class="kv">
+            <div><b>Daily</b><span id="dailyReportStatus">-</span></div>
+            <div><b>Weekly</b><span id="weeklyReportStatus">-</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Sentiment (C)</h3>
+          <div class="kv">
+            <div><b>Digest</b><span id="sentimentDigestStatus">-</span></div>
+            <div><b>Week</b><span id="sentimentDigestWeek">-</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Archivist (E)</h3>
+          <div class="kv">
+            <div><b>Archive</b><span id="archiveStatus">-</span></div>
+            <div><b>Patterns</b><span id="patternCount">-</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <div class="card">
+          <h2>Latest Runs</h2>
+          <table>
+            <thead><tr><th>Agent</th><th>Status</th><th>Started</th><th>Finished</th><th>Run ID</th></tr></thead>
+            <tbody id="runsTbody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h2>Announcements Snapshot</h2>
+          <div id="annStats" class="small">-</div>
+          <pre id="annPre" style="margin-top:8px"></pre>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <div class="card">
+          <h2>Email Validation (Daily)</h2>
+          <pre id="emailDailyPre"></pre>
+        </div>
+        <div class="card">
+          <h2>Email Validation (Weekly)</h2>
+          <pre id="emailWeeklyPre"></pre>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Trigger Log</h2>
+        <pre id="triggerLogPre"></pre>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const toJSON = (v) => JSON.stringify(v ?? null, null, 2);
+    const state = { key: "" };
+
+    function inferKey() {
+      const fromUrl = new URL(window.location.href).searchParams.get("api_key");
+      const fromStorage = localStorage.getItem("official_ui_api_key");
+      return fromUrl || fromStorage || "";
+    }
+
+    function statusClass(value) {
+      const v = (value || "").toLowerCase();
+      if (v === "ok" || v === "success" || v === "sent" || v === "generated") return "ok";
+      if (v === "partial" || v === "degraded" || v === "warning") return "warn";
+      if (v === "fail" || v === "error") return "fail";
+      return "warn";
+    }
+
+    async function api(path, opts = {}) {
+      const headers = Object.assign({}, opts.headers || {}, { "X-API-Key": state.key });
+      const res = await fetch(path, Object.assign({}, opts, { headers }));
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(path + " -> " + res.status + " " + body);
+      }
+      return res.json();
+    }
+
+    function appendTriggerLog(line, payload) {
+      const pre = $("triggerLogPre");
+      const ts = new Date().toISOString();
+      const entry = `[${ts}] ${line}\n${toJSON(payload)}\n\n`;
+      pre.textContent = entry + pre.textContent;
+    }
+
+    async function runAgent(agent) {
+      const params = new URLSearchParams();
+      if (agent === "analyst") params.set("report_type", "daily");
+      if (agent === "archivist") params.set("run_type", "weekly");
+      const suffix = params.toString() ? `?${params.toString()}` : "";
+      try {
+        const payload = await api(`/run/${agent}${suffix}`, { method: "POST" });
+        appendTriggerLog(`Triggered ${agent}`, payload);
+        await loadDashboard();
+      } catch (e) {
+        appendTriggerLog(`Trigger failed: ${agent}`, { error: String(e) });
+      }
+    }
+
+    async function runValidation(window) {
+      try {
+        const payload = await api(`/admin/email-validation/run?window=${encodeURIComponent(window)}&force=true`, { method: "POST" });
+        appendTriggerLog(`Triggered email validation (${window})`, payload);
+        await loadDashboard();
+      } catch (e) {
+        appendTriggerLog(`Email validation failed (${window})`, { error: String(e) });
+      }
+    }
+
+    async function loadHealth() {
+      const payload = await api("/health");
+      $("healthBadge").textContent = payload.status || "unknown";
+      $("healthBadge").className = `status ${statusClass(payload.status)}`;
+      $("healthMeta").textContent = `timestamp: ${payload.timestamp || "-"}`;
+      $("healthPre").textContent = toJSON(payload.dependencies || payload);
+    }
+
+    async function loadRuns() {
+      const payload = await api("/runs?limit=25");
+      const rows = payload.items || [];
+      const tbody = $("runsTbody");
+      tbody.innerHTML = "";
+      for (const r of rows.slice(0, 12)) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.agent_name || "-"}</td>
+          <td><span class="status ${statusClass(r.status)}">${r.status || "-"}</span></td>
+          <td class="small">${r.started_at || "-"}</td>
+          <td class="small">${r.finished_at || "-"}</td>
+          <td class="mono small">${(r.run_id || "").slice(0, 12)}…</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    async function loadReports() {
+      const [daily, weekly] = await Promise.all([
+        api("/reports/latest?type=daily"),
+        api("/reports/latest?type=weekly"),
+      ]);
+      const d = daily.item || {};
+      const w = weekly.item || {};
+      $("dailyReportStatus").textContent = `${d.status || "-"} ${d.period_key ? "· " + d.period_key : ""}`;
+      $("weeklyReportStatus").textContent = `${w.status || "-"} ${w.period_key ? "· " + w.period_key : ""}`;
+    }
+
+    async function loadSentiment() {
+      const payload = await api("/sentiment/digest/latest");
+      const item = payload.item || {};
+      $("sentimentDigestStatus").textContent = item.status || "-";
+      $("sentimentDigestWeek").textContent = item.week_start || "-";
+    }
+
+    async function loadArchivist() {
+      const [archive, summary] = await Promise.all([
+        api("/archive/latest?run_type=weekly"),
+        api("/patterns/summary"),
+      ]);
+      const a = archive.item || {};
+      $("archiveStatus").textContent = `${a.status || "-"} ${a.period_key ? "· " + a.period_key : ""}`;
+      $("patternCount").textContent = String(summary.active_count ?? summary.total_count ?? "-");
+    }
+
+    async function loadAnnouncements() {
+      const [stats, list] = await Promise.all([
+        api("/announcements/stats"),
+        api("/announcements?limit=10"),
+      ]);
+      $("annStats").textContent = `total=${stats.total ?? "-"} · alerted=${stats.alerted ?? "-"} · unalerted=${stats.unalerted ?? "-"}`;
+      $("annPre").textContent = toJSON((list.items || []).map((x) => ({
+        id: (x.announcement_id || "").slice(0, 12),
+        ticker: x.ticker,
+        type: x.announcement_type || x.type,
+        source_id: x.source_id,
+        date: x.announcement_date,
+        headline: x.headline
+      })));
+    }
+
+    async function loadEmailValidation() {
+      try {
+        const d = await api("/email-validation/latest?window=daily");
+        $("emailDailyPre").textContent = toJSON(d.item || d);
+      } catch (e) {
+        $("emailDailyPre").textContent = toJSON({ error: String(e) });
+      }
+      try {
+        const w = await api("/email-validation/latest?window=weekly");
+        $("emailWeeklyPre").textContent = toJSON(w.item || w);
+      } catch (e) {
+        $("emailWeeklyPre").textContent = toJSON({ error: String(e) });
+      }
+    }
+
+    async function loadDashboard() {
+      await Promise.allSettled([
+        loadHealth(),
+        loadRuns(),
+        loadReports(),
+        loadSentiment(),
+        loadArchivist(),
+        loadAnnouncements(),
+        loadEmailValidation(),
+      ]);
+    }
+
+    function bootstrap() {
+      state.key = inferKey();
+      $("apiKey").value = state.key;
+
+      $("saveKeyBtn").addEventListener("click", async () => {
+        state.key = $("apiKey").value.trim();
+        localStorage.setItem("official_ui_api_key", state.key);
+        appendTriggerLog("Saved API key", { ok: true });
+        await loadDashboard();
+      });
+
+      $("reloadBtn").addEventListener("click", () => loadDashboard());
+
+      document.querySelectorAll("button[data-agent]").forEach((btn) => {
+        btn.addEventListener("click", () => runAgent(btn.getAttribute("data-agent")));
+      });
+      document.querySelectorAll("button[data-validation]").forEach((btn) => {
+        btn.addEventListener("click", () => runValidation(btn.getAttribute("data-validation")));
+      });
+
+      loadDashboard();
+    }
+
+    bootstrap();
+  </script>
+</body>
+</html>

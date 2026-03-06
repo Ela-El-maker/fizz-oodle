@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "id": {"videoId": "abc123vid"},
+      "snippet": {
+        "title": "Safaricom Stock Discussion",
+        "publishedAt": "2026-03-03T08:00:00Z"
+      }
+    }
+  ]
+}

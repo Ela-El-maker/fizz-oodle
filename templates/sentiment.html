@@ -1,0 +1,74 @@
+{% extends "email/base.html" %}
+{% import "email/components.html" as ui %}
+
+{% block title %}Weekly Stock Sentiment Digest{% endblock %}
+{% block header_title %}Weekly Stock Sentiment Digest{% endblock %}
+{% block header_subtitle %}Week starting {{ week_start }} · Signal mix and confidence{% endblock %}
+
+{% block content %}
+  <div class="section">
+    {{ ui.section_header("Narrative Summary", "What market participants are saying") }}
+    <p><strong>{{ human_summary_v2.headline or human_summary.headline or 'Sentiment pulse update' }}</strong></p>
+    <p>{{ human_summary_v2.plain_summary or human_summary.plain_summary or mood }}</p>
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("What Changed", "Main sentiment drivers") }}
+    <ul class="bullet">
+      {% for item in human_summary_v2.key_drivers or [] %}
+      <li>{{ item }}</li>
+      {% endfor %}
+      {% if not (human_summary_v2.key_drivers or []) %}
+      <li>No major sentiment driver could be isolated this cycle.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Risks & Confidence", "Uncertainty signals and context") }}
+    <ul class="bullet">
+      {% for item in human_summary_v2.risks or [] %}
+      <li>{{ item }}</li>
+      {% endfor %}
+      {% if not (human_summary_v2.risks or []) %}
+      <li>No high-risk confidence flags from current sentiment inputs.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Sentiment Chart", "Bullish vs bearish distribution") }}
+    <img alt="Sentiment" src="data:image/png;base64,{{ chart_b64 }}" style="max-width:100%; border-radius:12px; border:1px solid #e5e7eb;" />
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Top Tickers", "Most discussed tickers this week") }}
+    {% for r in rows[:12] %}
+      <div class="story">
+        <div class="story-head">
+          <span class="lane lane-kenya">{{ r.ticker }}</span>
+          <span class="impact">Mentions {{ r.mentions }}</span>
+        </div>
+        <div class="story-body">
+          <p><strong>{{ r.name }}</strong></p>
+          <p>Bull {{ r.bull }}% · Bear {{ r.bear }}% · Neutral {{ r.neu }}%</p>
+          <p>Score {{ "%.3f"|format(r.score) if r.score is not none else "-" }} · Confidence {{ "%.3f"|format(r.confidence) if r.confidence is not none else "-" }} · WoW {{ r.wow if r.wow is not none else "-" }}</p>
+          {% if r.notable_quotes %}
+          <ul class="source-list">
+            {% for q in r.notable_quotes[:2] %}
+            <li>{{ q.excerpt }}{% if q.url %} — <a href="{{ q.url }}">source</a>{% endif %}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if missing_disclosure %}
+  <div class="section">
+    {{ ui.section_header("Missing Data", "Coverage caveat") }}
+    <p class="muted">{{ missing_disclosure }}</p>
+  </div>
+  {% endif %}
+{% endblock %}

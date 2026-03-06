@@ -1,0 +1,115 @@
+groups:
+  - name: platform-health
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"gateway|scheduler|run_ledger|agents"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service down: {{ $labels.instance }}"
+          description: "Prometheus cannot scrape {{ $labels.job }} on {{ $labels.instance }}."
+
+      - alert: DatabaseExporterDown
+        expr: up{job="postgres"} == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Postgres exporter unavailable"
+          description: "Postgres exporter is down; database visibility is lost."
+
+      - alert: RedisExporterDown
+        expr: up{job="redis"} == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis exporter unavailable"
+          description: "Redis exporter is down; queue/stream visibility is lost."
+
+  - name: run-windows
+    rules:
+      - alert: BriefingRunMissingWeekday
+        expr: (day_of_week() >= 1 and day_of_week() <= 5) and (hour() >= 6) and (hour() <= 23) and increase(run_events_total{agent_name="briefing",status=~"success|partial"}[24h]) < 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent A missing expected run window"
+          description: "No successful/partial briefing run in the last 24h."
+
+      - alert: AnnouncementsRunMissing
+        expr: increase(run_events_total{agent_name="announcements",status=~"success|partial"}[3h]) < 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent B missing expected run window"
+          description: "No successful/partial announcements run in the last 3h."
+
+      - alert: SentimentRunMissingWeekly
+        expr: increase(run_events_total{agent_name="sentiment",status=~"success|partial"}[8d]) < 1
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent C missing expected weekly window"
+          description: "No successful/partial sentiment run in the last 8 days."
+
+      - alert: AnalystRunMissing
+        expr: increase(run_events_total{agent_name="analyst",status=~"success|partial"}[30h]) < 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent D missing expected run window"
+          description: "No successful/partial analyst run in the last 30h."
+
+      - alert: ArchivistRunMissingWeekly
+        expr: increase(run_events_total{agent_name="archivist",status=~"success|partial"}[8d]) < 1
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent E missing expected weekly window"
+          description: "No successful/partial archivist run in the last 8 days."
+
+      - alert: NarratorRunMissing
+        expr: increase(run_events_total{agent_name="narrator",status=~"success|partial"}[2h]) < 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent F missing expected run window"
+          description: "No successful/partial narrator run in the last 2h."
+
+  - name: quality-signals
+    rules:
+      - alert: HighFailureRatio
+        expr: |
+          (
+            sum by (agent_name) (increase(run_events_total{status="fail"}[6h]))
+            /
+            clamp_min(sum by (agent_name) (increase(run_events_total[6h])), 1)
+          ) > 0.4
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High failure ratio for {{ $labels.agent_name }}"
+          description: "Agent has >40% failed runs over the last 6h."
+
+      - alert: HighPartialRatio
+        expr: |
+          (
+            sum by (agent_name) (increase(run_events_total{status="partial"}[6h]))
+            /
+            clamp_min(sum by (agent_name) (increase(run_events_total[6h])), 1)
+          ) > 0.6
+        for: 15m
+        labels:
+          severity: info
+        annotations:
+          summary: "High partial ratio for {{ $labels.agent_name }}"
+          description: "Agent has >60% partial runs over the last 6h."

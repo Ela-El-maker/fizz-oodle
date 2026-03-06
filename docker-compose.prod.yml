@@ -1,0 +1,301 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      POSTGRES_USER: ${DB_USER:-marketintel}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-marketintel}
+      POSTGRES_DB: ${DB_NAME:-market_intel}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./scripts/init-microservice-dbs.sql:/docker-entrypoint-initdb.d/init-microservice-dbs.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-marketintel} -d ${DB_NAME:-market_intel}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data_prod:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  gateway-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    command: >
+      sh -lc "uvicorn services.gateway.main:app --host 0.0.0.0 --port 8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/metrics', timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    image: ${FRONTEND_IMAGE:?set FRONTEND_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Market Intel Platform}
+      NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://gateway-service:8000}
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 >/dev/null 2>&1 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  scheduler-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    command: >
+      sh -lc "uvicorn services.scheduler.main:app --host 0.0.0.0 --port 8010"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8010/metrics', timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  run-ledger-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_platform_ops
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_platform_ops\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_platform_ops\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_platform_ops\" platform_ops && alembic -c services/platform_ops/alembic.ini upgrade head && uvicorn services.run_ledger.main:app --host 0.0.0.0 --port 8011"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8011/metrics', timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  agent-a-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_a
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_a\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_a\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_a\" agent_a && alembic -c services/agent_a/alembic.ini upgrade head && uvicorn services.agent_a.main:app --host 0.0.0.0 --port 8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; req=urllib.request.Request('http://localhost:8001/internal/health',headers={'X-Internal-Api-Key':'${INTERNAL_API_KEY}'}); urllib.request.urlopen(req, timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  agent-b-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_b
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_b\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_b\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_b\" agent_b && alembic -c services/agent_b/alembic.ini upgrade head && uvicorn services.agent_b.main:app --host 0.0.0.0 --port 8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; req=urllib.request.Request('http://localhost:8002/internal/health',headers={'X-Internal-Api-Key':'${INTERNAL_API_KEY}'}); urllib.request.urlopen(req, timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  agent-c-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_c
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_c\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_c\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_c\" agent_c && alembic -c services/agent_c/alembic.ini upgrade head && uvicorn services.agent_c.main:app --host 0.0.0.0 --port 8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; req=urllib.request.Request('http://localhost:8003/internal/health',headers={'X-Internal-Api-Key':'${INTERNAL_API_KEY}'}); urllib.request.urlopen(req, timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  agent-d-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_d
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_d\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_d\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_d\" agent_d && alembic -c services/agent_d/alembic.ini upgrade head && uvicorn services.agent_d.main:app --host 0.0.0.0 --port 8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; req=urllib.request.Request('http://localhost:8004/internal/health',headers={'X-Internal-Api-Key':'${INTERNAL_API_KEY}'}); urllib.request.urlopen(req, timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  agent-e-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_e
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_e\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_e\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_e\" agent_e && alembic -c services/agent_e/alembic.ini upgrade head && uvicorn services.agent_e.main:app --host 0.0.0.0 --port 8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; req=urllib.request.Request('http://localhost:8005/internal/health',headers={'X-Internal-Api-Key':'${INTERNAL_API_KEY}'}); urllib.request.urlopen(req, timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  agent-f-service:
+    image: ${APP_IMAGE:?set APP_IMAGE}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_f
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_f\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_f\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_f\" agent_f && alembic -c services/agent_f/alembic.ini upgrade head && uvicorn services.agent_f.main:app --host 0.0.0.0 --port 8006"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; req=urllib.request.Request('http://localhost:8006/internal/health',headers={'X-Internal-Api-Key':'${INTERNAL_API_KEY}'}); urllib.request.urlopen(req, timeout=5).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATA_SOURCE_NAME: postgresql://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/postgres?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.63.0
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    restart: unless-stopped
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=14d"]
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data_prod:/prometheus
+    depends_on:
+      gateway-service:
+        condition: service_started
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    restart: unless-stopped
+    env_file: .env.prod
+    command: ["--config.file=/etc/alertmanager/alertmanager.yml", "--config.expand-env", "--storage.path=/alertmanager"]
+    volumes:
+      - ./deploy/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data_prod:/alertmanager
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data_prod:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_started
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_www_prod:/var/www/certbot
+      - certbot_certs_prod:/etc/letsencrypt
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
+  certbot:
+    image: certbot/certbot:v2.11.0
+    restart: unless-stopped
+    env_file: .env.prod
+    command: >
+      sh -lc "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --non-interactive --agree-tos --no-eff-email || true; sleep 12h; done"
+    volumes:
+      - certbot_www_prod:/var/www/certbot
+      - certbot_certs_prod:/etc/letsencrypt
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+  prometheus_data_prod:
+  grafana_data_prod:
+  alertmanager_data_prod:
+  certbot_www_prod:
+  certbot_certs_prod:

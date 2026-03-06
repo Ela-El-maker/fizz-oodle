@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;background:#f6f7fb;color:#111;margin:0;padding:16px}
+      .wrap{max-width:860px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #ececec}
+      .hd{padding:18px 22px;background:#111827;color:#fff}
+      .hd h1{margin:0;font-size:18px}
+      .hd p{margin:6px 0 0;opacity:.85;font-size:12px}
+      .sec{padding:18px 22px;border-top:1px solid #f0f0f0}
+      h2{margin:0 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#444}
+      table{width:100%;border-collapse:collapse;font-size:13px}
+      th,td{padding:8px 6px;border-bottom:1px solid #f3f3f3;text-align:left;vertical-align:top}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas}
+      .pill{display:inline-block;padding:2px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:11px}
+      .warn{color:#9a3412}
+      .ft{padding:14px 22px;color:#888;font-size:11px;background:#fafafa}
+      ul{margin:8px 0 0 20px;padding:0}
+      li{margin:4px 0}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="hd">
+        <h1>{{ payload.title }}</h1>
+        <p>{{ payload.report_type|upper }} report · period {{ payload.period_key }}</p>
+      </div>
+
+      <div class="sec">
+        <h2>Overview</h2>
+        <ul>
+          {% for line in payload.overview %}
+          <li>{{ line }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      {% if human_summary_v2 %}
+      <div class="sec">
+        <h2>Executive Headline</h2>
+        {% if human_summary_v2.headline %}<p><strong>{{ human_summary_v2.headline }}</strong></p>{% endif %}
+        {% if human_summary_v2.plain_summary %}<p>{{ human_summary_v2.plain_summary }}</p>{% endif %}
+      </div>
+
+      <div class="sec">
+        <h2>What Changed</h2>
+        <ul>
+          {% for line in human_summary_v2.key_drivers or [] %}
+          <li>{{ line }}</li>
+          {% endfor %}
+          {% if not (human_summary_v2.key_drivers or []) %}
+          <li>No major narrative driver extracted in this cycle.</li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="sec">
+        <h2>Risks & Uncertainty</h2>
+        <ul>
+          {% for line in human_summary_v2.risks or [] %}
+          <li>{{ line }}</li>
+          {% endfor %}
+          {% if not (human_summary_v2.risks or []) %}
+          <li>No elevated uncertainty flags from current synthesis inputs.</li>
+          {% endif %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="sec">
+        <h2>Market Snapshot</h2>
+        <p>Market date: <span class="mono">{{ payload.market_snapshot.market_date or "N/A" }}</span></p>
+        <table>
+          <thead>
+            <tr><th>Index</th><th>Value</th><th>Change</th><th>%</th></tr>
+          </thead>
+          <tbody>
+            {% for row in payload.market_snapshot.index_rows %}
+            <tr>
+              <td>{{ row.index_name }}</td>
+              <td>{{ row.value if row.value is not none else "N/A" }}</td>
+              <td>{{ row.change_val if row.change_val is not none else "N/A" }}</td>
+              <td>{{ row.pct_change if row.pct_change is not none else "N/A" }}</td>
+            </tr>
+            {% endfor %}
+            {% if not payload.market_snapshot.index_rows %}
+            <tr><td colspan="4">No index rows for market date.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+        <table style="margin-top:10px">
+          <thead><tr><th>Pair</th><th>Rate</th><th>Source</th></tr></thead>
+          <tbody>
+            {% for row in payload.market_snapshot.fx_rows %}
+            <tr><td>{{ row.pair }}</td><td>{{ row.rate }}</td><td>{{ row.source_id }}</td></tr>
+            {% endfor %}
+            {% if not payload.market_snapshot.fx_rows %}
+            <tr><td colspan="3">No FX rows for market date.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sec">
+        <h2>Key Corporate Events</h2>
+        <table>
+          <thead><tr><th>Ticker</th><th>Type</th><th>Headline</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for row in payload.key_events %}
+            <tr>
+              <td class="mono">{{ row.ticker or "UNKNOWN" }}</td>
+              <td><span class="pill">{{ row.type }}</span></td>
+              <td><a href="{{ row.url }}">{{ row.headline }}</a></td>
+              <td>{{ row.date or "N/A" }}</td>
+            </tr>
+            {% endfor %}
+            {% if not payload.key_events %}
+            <tr><td colspan="4">No events in the selected window.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sec">
+        <h2>Sentiment Pulse</h2>
+        <table>
+          <thead><tr><th>Ticker</th><th>Mentions</th><th>Score</th><th>WoW</th><th>Confidence</th></tr></thead>
+          <tbody>
+            {% for row in payload.sentiment_pulse %}
+            <tr>
+              <td class="mono">{{ row.ticker }}</td>
+              <td>{{ row.mentions_count }}</td>
+              <td>{{ "%.3f"|format(row.weighted_score) }}</td>
+              <td>{{ "%.3f"|format(row.wow_delta) if row.wow_delta is not none else "N/A" }}</td>
+              <td>{{ "%.3f"|format(row.confidence) }}</td>
+            </tr>
+            {% endfor %}
+            {% if not payload.sentiment_pulse %}
+            <tr><td colspan="5">No sentiment rows available for selected week.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sec">
+        <h2>Archivist Feedback</h2>
+        <p>
+          Active patterns: <strong>{{ (payload.archivist_feedback.patterns or [])|length if payload.archivist_feedback else 0 }}</strong> ·
+          Impact snapshots: <strong>{{ (payload.archivist_feedback.impacts or [])|length if payload.archivist_feedback else 0 }}</strong>
+        </p>
+        {% if payload.archivist_feedback and payload.archivist_feedback.patterns %}
+        <table>
+          <thead><tr><th>Ticker</th><th>Pattern</th><th>Accuracy %</th><th>Confidence %</th></tr></thead>
+          <tbody>
+            {% for row in payload.archivist_feedback.patterns[:5] %}
+            <tr>
+              <td class="mono">{{ row.ticker }}</td>
+              <td>{{ row.pattern_type }}</td>
+              <td>{{ row.accuracy_pct }}</td>
+              <td>{{ row.confidence_pct }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No active confirmed pattern feedback available.</p>
+        {% endif %}
+      </div>
+
+      <div class="sec">
+        <h2>What To Watch</h2>
+        <ul>
+          {% for line in payload.what_to_watch %}
+          <li>{{ line }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="sec">
+        <h2>Data Quality</h2>
+        <ul class="{% if payload.degraded %}warn{% endif %}">
+          {% for line in payload.data_quality %}
+          <li>{{ line }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="ft">Informational output only. Not investment advice.</div>
+    </div>
+  </body>
+</html>

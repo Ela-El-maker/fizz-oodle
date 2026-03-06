@@ -1,0 +1,57 @@
+{% extends "email/base.html" %}
+{% import "email/components.html" as ui %}
+
+{% block title %}NSE Alert Monitor{% endblock %}
+{% block header_title %}High-Impact Market Alerts{% endblock %}
+{% block header_subtitle %}{{ date }} · {{ count }} urgent event(s) after Kenya-impact filtering{% endblock %}
+
+{% block content %}
+  <div class="section">
+    {{ ui.section_header("Executive Headline", "What needs attention now") }}
+    {% if human_summary_v2.headline %}<p><strong>{{ human_summary_v2.headline }}</strong></p>{% endif %}
+    <p>{{ human_summary_v2.plain_summary or human_summary.plain_summary or 'Filtered alert feed from current cycle.' }}</p>
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("What Changed", "Alert drivers from this run") }}
+    <ul class="bullet">
+      {% for bullet in human_summary_v2.key_drivers or [] %}
+      <li>{{ bullet }}</li>
+      {% endfor %}
+      {% if not (human_summary_v2.key_drivers or []) %}
+      <li>No major change drivers identified in this cycle.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Urgent Cards", "Compact alerts with direct source links") }}
+    {% for group in groups %}
+      {% for a in group["items"] %}
+        <div class="story">
+          <div class="story-head">
+            <span class="lane lane-kenya">{{ group.ticker }}</span>
+            <span class="impact">{{ a.type|replace('_', ' ')|title }}</span>
+          </div>
+          <div class="story-body">
+            <h3><a href="{{ a.url }}">{{ a.headline }}</a></h3>
+            <p><strong>What happened:</strong> {{ a.details or a.headline }}</p>
+            <p><strong>Why it matters in Kenya:</strong> Disclosure may affect valuation, governance confidence, or near-term positioning.</p>
+            <p><strong>Who is affected:</strong> {{ group.company }}{% if group.ticker and group.ticker != 'UNKNOWN' %} ({{ group.ticker }}){% endif %} and related sector peers.</p>
+            <p><strong>What to watch next:</strong> Management guidance, official filing updates, and immediate follow-on market reaction.</p>
+            <ul class="source-list">
+              <li><a href="{{ a.url }}">Open source</a> · {{ a.source }}{% if a.date %} · {{ a.date }}{% endif %}</li>
+            </ul>
+          </div>
+        </div>
+      {% endfor %}
+    {% endfor %}
+    {% if not groups %}
+    <p class="muted">No alert cards passed the urgent filter for this cycle.</p>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block footer %}
+Run ID: {{ run_id }} · High-impact alert stream only.
+{% endblock %}

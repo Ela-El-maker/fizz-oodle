@@ -1,0 +1,225 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-marketintel}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-marketintel}
+      POSTGRES_DB: ${DB_NAME:-market_intel}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-microservice-dbs.sql:/docker-entrypoint-initdb.d/init-microservice-dbs.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-marketintel} -d ${DB_NAME:-market_intel}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  gateway-service:
+    build: .
+    env_file: .env
+    command: >
+      sh -lc "uvicorn services.gateway.main:app --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./dashboard
+      args:
+        GATEWAY_INTERNAL_URL: http://gateway-service:8000
+    env_file: .env
+    environment:
+      NEXT_PUBLIC_APP_NAME: Market Intel Platform
+      NEXT_PUBLIC_GATEWAY_URL: http://gateway-service:8000
+      GATEWAY_INTERNAL_URL: http://gateway-service:8000
+    command: >
+      sh -lc "npm run start -- --hostname 0.0.0.0 --port 3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      gateway-service:
+        condition: service_started
+
+  scheduler-service:
+    build: .
+    env_file: .env
+    command: >
+      sh -lc "uvicorn services.scheduler.main:app --host 0.0.0.0 --port 8010 --reload"
+    ports:
+      - "8010:8010"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  run-ledger-service:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_platform_ops
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_platform_ops\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_platform_ops\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_platform_ops\" platform_ops && alembic -c services/platform_ops/alembic.ini upgrade head && uvicorn services.run_ledger.main:app --host 0.0.0.0 --port 8011 --reload"
+    ports:
+      - "8011:8011"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  agent-a-service:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_a
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_a\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_a\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_a\" agent_a && alembic -c services/agent_a/alembic.ini upgrade head && uvicorn services.agent_a.main:app --host 0.0.0.0 --port 8001 --reload"
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  agent-b-service:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_b
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_b\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_b\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_b\" agent_b && alembic -c services/agent_b/alembic.ini upgrade head && uvicorn services.agent_b.main:app --host 0.0.0.0 --port 8002 --reload"
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  agent-c-service:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_c
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_c\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_c\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_c\" agent_c && alembic -c services/agent_c/alembic.ini upgrade head && uvicorn services.agent_c.main:app --host 0.0.0.0 --port 8003 --reload"
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  agent-d-service:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_d
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_d\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_d\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_d\" agent_d && alembic -c services/agent_d/alembic.ini upgrade head && uvicorn services.agent_d.main:app --host 0.0.0.0 --port 8004 --reload"
+    ports:
+      - "8004:8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  agent-e-service:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_e
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_e\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_e\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_e\" agent_e && alembic -c services/agent_e/alembic.ini upgrade head && uvicorn services.agent_e.main:app --host 0.0.0.0 --port 8005 --reload"
+    ports:
+      - "8005:8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  agent-f-service:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_f
+    command: >
+      sh -lc "python scripts/ensure_database.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_f\" && python scripts/reset_alembic_version.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_f\" && python scripts/prune_service_tables.py \"postgresql+asyncpg://${DB_USER:-marketintel}:${DB_PASSWORD:-marketintel}@postgres:5432/db_agent_f\" agent_f && alembic -c services/agent_f/alembic.ini upgrade head && uvicorn services.agent_f.main:app --host 0.0.0.0 --port 8006 --reload"
+    ports:
+      - "8006:8006"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Legacy monolith stack retained under profile for fallback and parity checks.
+  api:
+    profiles: ["legacy"]
+    build: .
+    env_file: .env
+    command: uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "18000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    profiles: ["legacy"]
+    build: .
+    env_file: .env
+    command: celery -A celery_app.celery_app worker --loglevel=INFO --pool=solo --concurrency=1 --queues=celery,system,agent_a,agent_b,agent_c,agent_d,agent_e,agent_f
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    profiles: ["legacy"]
+    build: .
+    env_file: .env
+    command: celery -A celery_app.celery_app beat --loglevel=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  flower:
+    profiles: ["legacy", "monitoring"]
+    build: .
+    env_file: .env
+    command: celery -A celery_app.celery_app flower --port=5555 --basic_auth=${FLOWER_BASIC_AUTH:-}
+    ports:
+      - "5555:5555"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,83 @@
+version: 1
+timezone: Africa/Nairobi
+schedules:
+  - schedule_key: agent_a_daily_briefing
+    task_name: agent_briefing.run
+    timezone: Africa/Nairobi
+    eat_cron: "0 8 * * 1-5"
+    utc_cron: "0 5 * * 1-5"
+    notes: Weekday briefing at 08:00 EAT.
+  - schedule_key: agent_b_announcements_2h
+    task_name: agent_announcements.run
+    timezone: Africa/Nairobi
+    eat_cron: "0 */2 * * 1-5"
+    utc_cron: "0 */2 * * 1-5"
+    notes: Every 2 hours on weekdays.
+  - schedule_key: agent_c_weekly_sentiment
+    task_name: agent_sentiment.run
+    timezone: Africa/Nairobi
+    eat_cron: "0 7 * * 1"
+    utc_cron: "0 4 * * 1"
+    notes: Weekly digest every Monday 07:00 EAT.
+  - schedule_key: agent_d_daily_analyst
+    task_name: agent_analyst.run
+    timezone: Africa/Nairobi
+    eat_cron: "0 9 * * 1-5"
+    utc_cron: "0 6 * * 1-5"
+    task_kwargs:
+      report_type: daily
+    notes: Weekday analyst report at 09:00 EAT.
+  - schedule_key: agent_d_weekly_analyst
+    task_name: agent_analyst.run
+    timezone: Africa/Nairobi
+    eat_cron: "30 7 * * 1"
+    utc_cron: "30 4 * * 1"
+    task_kwargs:
+      report_type: weekly
+    notes: Weekly analyst report every Monday 07:30 EAT (30 minutes after Agent C).
+  - schedule_key: agent_system_ping
+    task_name: agent_system.ping
+    timezone: Africa/Nairobi
+    eat_cron: "* * * * *"
+    utc_cron: "* * * * *"
+    notes: Stage 1 placeholder cadence (1-minute). Revert to */15 for production.
+  - schedule_key: agent_e_weekly_archivist
+    task_name: agent_archivist.run
+    timezone: Africa/Nairobi
+    eat_cron: "0 6 * * 1"
+    utc_cron: "0 3 * * 1"
+    task_kwargs:
+      run_type: weekly
+    notes: Weekly archive and pattern update on Monday 06:00 EAT.
+  - schedule_key: agent_e_monthly_archivist
+    task_name: agent_archivist.run
+    timezone: Africa/Nairobi
+    eat_cron: "0 7 1 * *"
+    utc_cron: "0 4 1 * *"
+    task_kwargs:
+      run_type: monthly
+    notes: Monthly deep archive analysis on day 1 at 07:00 EAT.
+  - schedule_key: agent_f_narrator_30m
+    task_name: agent_narrator.run
+    timezone: Africa/Nairobi
+    eat_cron: "*/30 * * * *"
+    utc_cron: "*/30 * * * *"
+    notes: Narrative synthesis refresh every 30 minutes.
+  - schedule_key: ops_email_validation_daily
+    task_name: ops.email_validation.run
+    timezone: Africa/Nairobi
+    eat_cron: "0 10 * * 1-5"
+    utc_cron: "0 7 * * 1-5"
+    task_kwargs:
+      window: daily
+      force: false
+    notes: Automated daily SMTP validation for A/B/D to QA inbox.
+  - schedule_key: ops_email_validation_weekly
+    task_name: ops.email_validation.run
+    timezone: Africa/Nairobi
+    eat_cron: "30 9 * * 1"
+    utc_cron: "30 6 * * 1"
+    task_kwargs:
+      window: weekly
+      force: false
+    notes: Automated weekly SMTP validation for C/E/D to QA inbox.

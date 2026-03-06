@@ -1,0 +1,91 @@
+{% extends "email/base.html" %}
+{% import "email/components.html" as ui %}
+
+{% block title %}Market Intel Daily Digest{% endblock %}
+{% block header_title %}Market Intel Daily — Kenya Core + Global Outside{% endblock %}
+{% block header_subtitle %}{{ payload.date_label }} · Narrative newsroom briefing with evidence links{% endblock %}
+
+{% block content %}
+  <div class="section">
+    {{ ui.section_header("Operator Snapshot", "Fast read KPIs from current cycle") }}
+    {{ ui.kpi_row(payload.kpis[:2]) }}
+    {{ ui.kpi_row(payload.kpis[2:4]) }}
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Today in One Minute", "Clear summary first, details after") }}
+    <p><strong>{{ payload.one_minute.headline }}</strong></p>
+    <p>{{ payload.one_minute.summary }}</p>
+    {{ ui.confidence_badge(payload.one_minute.confidence) }}
+    {% if payload.one_minute.sources %}
+      {{ ui.source_links(payload.one_minute.sources) }}
+    {% endif %}
+
+    {% for explainer in payload.explainers %}
+      {{ ui.explainer(explainer.term, explainer.meaning) }}
+    {% endfor %}
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Inside Kenya", "Top market-relevant local signals") }}
+    {% if payload.inside_kenya %}
+      {% for item in payload.inside_kenya %}
+        {{ ui.story_card(item) }}
+      {% endfor %}
+    {% else %}
+      <p class="muted">No Kenya-core events met digest story criteria this cycle.</p>
+    {% endif %}
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Outside Kenya", "Global drivers ranked by Kenya impact") }}
+    {% if payload.outside_kenya %}
+      {% for item in payload.outside_kenya %}
+        {{ ui.story_card(item) }}
+      {% endfor %}
+    {% else %}
+      <p class="muted">No high-impact global events crossed the Kenya threshold.</p>
+    {% endif %}
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("What This Means For Kenya", "Agent F synthesis + transmission channels") }}
+    {% if payload.global_to_kenya %}
+      {% for line in payload.global_to_kenya %}
+        <p>{{ line }}</p>
+      {% endfor %}
+    {% else %}
+      <p class="muted">Narrator context unavailable for this cycle. Deterministic fallback summary used.</p>
+    {% endif %}
+    {% if payload.global_driver_links %}
+      {{ ui.source_links(payload.global_driver_links) }}
+    {% endif %}
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Watchlist", "Sectors and tickers to monitor next") }}
+    {% if payload.watchlist %}
+      <ul class="bullet">
+        {% for row in payload.watchlist %}
+          <li>{{ row }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No focused watchlist could be derived from this run.</p>
+    {% endif %}
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Read More", "Direct links from monitored sources") }}
+    {{ ui.source_links(payload.read_more) }}
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Data Quality", "Confidence and freshness flags") }}
+    <ul class="bullet">
+      {% for row in payload.data_quality %}
+        <li>{{ row }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}

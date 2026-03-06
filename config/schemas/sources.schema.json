@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "defaults", "sources"],
+  "properties": {
+    "version": {"type": "integer", "minimum": 1},
+    "defaults": {
+      "type": "object",
+      "required": ["request_timeout_seconds", "max_retries", "backoff_base_seconds", "per_domain_min_delay_seconds"],
+      "properties": {
+        "request_timeout_seconds": {"type": "integer", "minimum": 1},
+        "max_retries": {"type": "integer", "minimum": 0},
+        "backoff_base_seconds": {"type": "number", "minimum": 0},
+        "per_domain_min_delay_seconds": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "type",
+          "base_url",
+          "enabled_by_default",
+          "tier",
+          "required_for_success",
+          "parser",
+          "timeout_secs",
+          "retries",
+          "backoff_base",
+          "rate_limit_rps",
+          "ticker_strategy"
+        ],
+        "properties": {
+          "source_id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "type": {"type": "string", "enum": ["official", "regulator", "ir", "rss", "news", "sitemap"]},
+          "base_url": {"type": "string", "pattern": "^https://"},
+          "enabled_by_default": {"type": "boolean"},
+          "tier": {"type": "string", "enum": ["core", "secondary"]},
+          "required_for_success": {"type": "boolean"},
+          "parser": {"type": "string", "minLength": 3},
+          "timeout_secs": {"type": "integer", "minimum": 1},
+          "retries": {"type": "integer", "minimum": 0},
+          "backoff_base": {"type": "number", "minimum": 1},
+          "rate_limit_rps": {"type": "number", "exclusiveMinimum": 0},
+          "cache_ttl_seconds": {"type": "integer", "minimum": 0},
+          "use_conditional_get": {"type": "boolean"},
+          "max_items_per_run": {"type": "integer", "minimum": 1},
+          "requires_auth": {"type": "boolean"},
+          "auth_env_key": {"type": ["string", "null"]},
+          "ticker_strategy": {
+            "type": "string",
+            "enum": ["explicit", "headline_regex", "company_alias", "none"]
+          },
+          "scope": {
+            "type": "string",
+            "enum": ["kenya_core", "kenya_extended", "global_outside"]
+          },
+          "market_region": {
+            "type": "string",
+            "enum": ["kenya", "east_africa", "africa", "global"]
+          },
+          "signal_class": {
+            "type": "string",
+            "enum": [
+              "issuer_disclosure",
+              "regulator",
+              "macro",
+              "commodity",
+              "global_market",
+              "ai_tech",
+              "news_signal"
+            ]
+          },
+          "theme": {"type": "string", "minLength": 1},
+          "primary_use": {"type": "string", "minLength": 1},
+          "disabled_reason": {"type": "string", "minLength": 1},
+          "kenya_impact_enabled": {"type": "boolean"},
+          "kenya_impact_weight": {"type": "number", "minimum": 0},
+          "premium": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

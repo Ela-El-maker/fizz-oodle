@@ -1,0 +1,280 @@
+version: 1
+region: kenya
+timezone: Africa/Nairobi
+tracked_companies:
+  - ticker: EGAD
+    company_name: Eaagads Ltd
+    exchange: NSE
+    aliases: [Eaagads Ltd Ord 1.25, Eaagads, EGAD]
+  - ticker: KAPC
+    company_name: Kapchorua Tea Co. Ltd
+    exchange: NSE
+    aliases: [Kapchorua Tea Co. Ltd Ord 5.00, Kapchorua Tea, KAPC]
+  - ticker: KUKZ
+    company_name: Kakuzi
+    exchange: NSE
+    aliases: [Kakuzi Ord 5.00, Kakuzi, KUKZ]
+  - ticker: LIMT
+    company_name: Limuru Tea Co. Ltd
+    exchange: NSE
+    aliases: [Limuru Tea Co. Ltd Ord 20.00, Limuru Tea, LIMT]
+  - ticker: SASN
+    company_name: Sasini Ltd
+    exchange: NSE
+    aliases: [Sasini Ltd Ord 1.00, Sasini, SASN]
+  - ticker: WTK
+    company_name: Williamson Tea Kenya Ltd
+    exchange: NSE
+    aliases: [Williamson Tea Kenya Ltd Ord 5.00, Williamson Tea, WTK]
+  - ticker: CGEN
+    company_name: Car and General (K) Ltd
+    exchange: NSE
+    aliases: [Car and General (K) Ltd Ord 5.00, Car and General, CGEN]
+  - ticker: ABSA
+    company_name: Absa Bank Kenya PLC
+    exchange: NSE
+    aliases: [Absa Bank Kenya PLC, Absa Bank Kenya, Absa Kenya, ABSA]
+  - ticker: SBIC
+    company_name: Stanbic Holdings PLC
+    exchange: NSE
+    aliases: [Stanbic Holdings PLC Ord 5.00, Stanbic Holdings, Stanbic, SBIC]
+  - ticker: IMH
+    company_name: I&M Holdings Ltd
+    exchange: NSE
+    aliases: [I&M Holdings Ltd Ord 1.00, I and M Holdings, I&M Holdings, IMH]
+  - ticker: DTK
+    company_name: Diamond Trust Bank Kenya Ltd
+    exchange: NSE
+    aliases: [Diamond Trust Bank Kenya Ltd Ord 4.00, Diamond Trust Bank, DTB, DTK]
+  - ticker: SCBK
+    company_name: Standard Chartered Bank Kenya Ltd
+    exchange: NSE
+    aliases: [Standard Chartered Bank Ltd Ord 5.00, Standard Chartered Kenya, StanChart Kenya, SCBK]
+  - ticker: EQTY
+    company_name: Equity Group Holdings
+    exchange: NSE
+    aliases: [Equity Group Holdings Ord 0.50, Equity Group, Equity Bank, EQTY]
+  - ticker: COOP
+    company_name: The Co-operative Bank of Kenya Ltd
+    exchange: NSE
+    aliases: [The Co-operative Bank of Kenya Ltd Ord 1.00, Co-op Bank, Cooperative Bank, COOP]
+  - ticker: BKG
+    company_name: BK Group PLC
+    exchange: NSE
+    aliases: [BK Group PLC, BKG]
+  - ticker: HFCK
+    company_name: HF Group Ltd
+    exchange: NSE
+    aliases: [HF Group Ltd Ord 5.00, HF Group, HFCK]
+  - ticker: KCB
+    company_name: KCB Group Ltd
+    exchange: NSE
+    aliases: [KCB Group Ltd Ord 1.00, KCB Group PLC, KCB]
+  - ticker: NCBA
+    company_name: NCBA Group PLC
+    exchange: NSE
+    aliases: [NCBA Group PLC, NCBA]
+  - ticker: XPRS
+    company_name: Express Ltd
+    exchange: NSE
+    aliases: [Express Ltd Ord 5.00, Express Kenya, XPRS]
+  - ticker: SMER
+    company_name: Sameer Africa PLC
+    exchange: NSE
+    aliases: [Sameer Africa PLC Ord 5.00, Sameer Africa, SMER]
+  - ticker: KQ
+    company_name: Kenya Airways Ltd
+    exchange: NSE
+    aliases: [Kenya Airways Ltd Ord 5.00, Kenya Airways PLC, Kenya Airways, KQ]
+  - ticker: NMG
+    company_name: Nation Media Group
+    exchange: NSE
+    aliases: [Nation Media Group Ord 2.50, Nation Media Group, Nation Media, NMG]
+  - ticker: SGL
+    company_name: Standard Group Ltd
+    exchange: NSE
+    aliases: [Standard Group Ltd Ord 5.00, Standard Group, SGL]
+  - ticker: TPSE
+    company_name: TPS Eastern Africa (Serena) Ltd
+    exchange: NSE
+    aliases: [TPS Eastern Africa (Serena) Ltd Ord 1.00, TPS Serena, TPSE]
+  - ticker: SCAN
+    company_name: Scangroup Ltd
+    exchange: NSE
+    aliases: [Scangroup Ltd Ord 1.00, Scangroup, SCAN]
+  - ticker: UCHM
+    company_name: Uchumi Supermarket Ltd
+    exchange: NSE
+    aliases: [Uchumi Supermarket Ltd Ord 5.00, Uchumi, UCHM]
+  - ticker: LKL
+    company_name: Longhorn Publishers Ltd
+    exchange: NSE
+    aliases: [Longhorn Publishers Ltd, Longhorn, LKL]
+  - ticker: DCON
+    company_name: Deacons (East Africa) PLC
+    exchange: NSE
+    aliases: [Deacons (East Africa) PLC Ord 2.50, Deacons East Africa, DCON]
+  - ticker: NBV
+    company_name: Nairobi Business Ventures Ltd
+    exchange: NSE
+    aliases: [Nairobi Business Ventures Ltd, NBV]
+  - ticker: ARM
+    company_name: Athi River Mining
+    exchange: NSE
+    aliases: [Athi River Mining Ord 5.00, Athi River Mining, ARM]
+  - ticker: BAMB
+    company_name: Bamburi Cement PLC
+    exchange: NSE
+    aliases: [Bamburi Cement PLC Ord 5.00, Bamburi Cement, Bamburi, BAMB]
+  - ticker: CRWN
+    company_name: Crown Paints Kenya PLC
+    exchange: NSE
+    aliases: [Crown Paints Kenya PLC Ord 5.00, Crown Paints, CRWN]
+  - ticker: CABL
+    company_name: E.A. Cables PLC
+    exchange: NSE
+    aliases: [E.A. Cables PLC Ord 0.50, East African Cables, CABL]
+  - ticker: PORT
+    company_name: E.A. Portland Cement Ltd
+    exchange: NSE
+    aliases: [E.A. Portland Cement Ltd Ord 5.00, East African Portland Cement, PORT]
+  - ticker: TOTL
+    company_name: Total Kenya Ltd
+    exchange: NSE
+    aliases: [Total Kenya Ltd Ord 5.00, Total Kenya, TOTL]
+  - ticker: KEGN
+    company_name: KenGen Ltd
+    exchange: NSE
+    aliases: [KenGen Ltd Ord 2.50, KenGen, KEGN]
+  - ticker: KPLC
+    company_name: Kenya Power & Lighting Co Ltd
+    exchange: NSE
+    aliases: [Kenya Power & Lighting Co Ltd, Kenya Power, KPLC]
+  - ticker: UMME
+    company_name: Umeme Ltd
+    exchange: NSE
+    aliases: [Umeme Ltd Ord 0.50, Umeme, UMME]
+  - ticker: JUB
+    company_name: Jubilee Holdings Ltd
+    exchange: NSE
+    aliases: [Jubilee Holdings Ltd Ord 5.00, Jubilee Holdings, Jubilee, JUB]
+  - ticker: SLAM
+    company_name: Sanlam Allianz Holdings (Kenya) PLC
+    exchange: NSE
+    aliases: [Sanlam Allianz Holdings (Kenya) PLC Ord 5.00, Sanlam Allianz Kenya, SLAM]
+  - ticker: KNRE
+    company_name: Kenya Re-Insurance Corporation Ltd
+    exchange: NSE
+    aliases: [Kenya Re-Insurance Corporation Ltd Ord 2.50, Kenya Re, KNRE]
+  - ticker: LBTY
+    company_name: Liberty Kenya Holdings Ltd
+    exchange: NSE
+    aliases: [Liberty Kenya Holdings Ltd, Liberty Kenya, LBTY]
+  - ticker: BRIT
+    company_name: Britam Holdings Ltd
+    exchange: NSE
+    aliases: [Britam Holdings Ltd Ord 0.10, Britam Holdings, Britam, BRIT]
+  - ticker: CIC
+    company_name: CIC Insurance Group Ltd
+    exchange: NSE
+    aliases: [CIC Insurance Group Ltd Ord 1.00, CIC Insurance, CIC]
+  - ticker: OCH
+    company_name: Olympia Capital Holdings Ltd
+    exchange: NSE
+    aliases: [Olympia Capital Holdings Ltd Ord 5.00, Olympia Capital, OCH]
+  - ticker: CTUM
+    company_name: Centum Investment Co Ltd
+    exchange: NSE
+    aliases: [Centum Investment Co Ltd Ord 0.50, Centum Investment, Centum, CTUM]
+  - ticker: TCL
+    company_name: Trans-Century Ltd
+    exchange: NSE
+    aliases: [Trans-Century Ltd, Trans Century, TCL]
+  - ticker: HAFR
+    company_name: Home Afrika Ltd
+    exchange: NSE
+    aliases: [Home Afrika Ltd Ord 1.00, Home Afrika, HAFR]
+  - ticker: KURV
+    company_name: Kurwitu Ventures
+    exchange: NSE
+    aliases: [Kurwitu Ventures, KURV]
+  - ticker: NSE
+    company_name: Nairobi Securities Exchange Ltd
+    exchange: NSE
+    aliases: [Nairobi Securities Exchange Ltd Ord 4.00, Nairobi Securities Exchange, NSE]
+  - ticker: BOC
+    company_name: B.O.C Kenya Ltd
+    exchange: NSE
+    aliases: [B.O.C Kenya Ltd Ord 5.00, BOC Kenya, BOC]
+  - ticker: BAT
+    company_name: British American Tobacco Kenya Ltd
+    exchange: NSE
+    aliases: [British American Tobacco Kenya Ltd Ord 10.00, BAT Kenya, BAT]
+  - ticker: CARB
+    company_name: Carbacid Investments Ltd
+    exchange: NSE
+    aliases: [Carbacid Investments Ltd Ord 5.00, Carbacid, CARB]
+  - ticker: EABL
+    company_name: East African Breweries Ltd
+    exchange: NSE
+    aliases: [East African Breweries Ltd Ord 2.00, East African Breweries, EABL]
+  - ticker: MSC
+    company_name: Mumias Sugar Co. Ltd
+    exchange: NSE
+    aliases: [Mumias Sugar Co. Ltd Ord 2.00, Mumias Sugar, MSC]
+  - ticker: UNGA
+    company_name: Unga Group Ltd
+    exchange: NSE
+    aliases: [Unga Group Ltd Ord 5.00, Unga Group, UNGA]
+  - ticker: EVRD
+    company_name: Eveready East Africa Ltd
+    exchange: NSE
+    aliases: [Eveready East Africa Ltd Ord 1.00, Eveready East Africa, EVRD]
+  - ticker: AMAC
+    company_name: Africa Mega Agricorp PLC
+    exchange: NSE
+    aliases: [Africa Mega Agricorp PLC Ord 5.00, Africa Mega Agricorp, AMAC]
+  - ticker: FTGH
+    company_name: Flame Tree Group Holdings Ltd
+    exchange: NSE
+    aliases: [Flame Tree Group Holdings Ltd Ord 0.825, Flame Tree Group, FTGH]
+  - ticker: SKL
+    company_name: Shri Krishana Overseas
+    exchange: NSE
+    aliases: [Shri Krishana Overseas (SKL), SKL.O0000, SKL]
+  - ticker: SCOM
+    company_name: Safaricom PLC
+    exchange: NSE
+    aliases: [Safaricom PLC Ord 0.05, Safaricom PLC, Safaricom, SCOM]
+  - ticker: LAPR
+    company_name: Laptrust Imara I-REIT
+    exchange: NSE
+    aliases: [Laptrust Imara I-REIT, LAPR]
+  - ticker: GLD
+    company_name: New Gold Issuer (RP) Ltd
+    exchange: NSE
+    aliases: [New Gold Issuer (RP) Ltd, GLD]
+  - ticker: SMWF
+    company_name: Satrix MSCI World Feeder ETF
+    exchange: NSE
+    aliases: [Satrix MSCI World Feeder ETF, SMWF.E0000, SMWF]
+  - ticker: MTN
+    company_name: MTN Group
+    exchange: JSE
+    aliases: [MTN Group Limited, MTN]
+  - ticker: NPN
+    company_name: Naspers
+    exchange: JSE
+    aliases: [Naspers Limited, NPN]
+  - ticker: SBK
+    company_name: Standard Bank Group
+    exchange: JSE
+    aliases: [Standard Bank Group Limited, Standard Bank Group, SBK]
+  - ticker: DANGCEM
+    company_name: Dangote Cement
+    exchange: NGX
+    aliases: [Dangote Cement PLC, Dangote Cement, DANGCEM]
+  - ticker: ZENITHBANK
+    company_name: Zenith Bank
+    exchange: NGX
+    aliases: [Zenith Bank PLC, Zenith Bank, ZENITHBANK]

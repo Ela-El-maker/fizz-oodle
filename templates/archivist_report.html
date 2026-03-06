@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;background:#f6f7fb;color:#111;margin:0;padding:16px}
+      .wrap{max-width:900px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #ececec}
+      .hd{padding:18px 22px;background:#0f172a;color:#fff}
+      .hd h1{margin:0;font-size:19px}
+      .hd p{margin:6px 0 0;opacity:.85;font-size:12px}
+      .sec{padding:18px 22px;border-top:1px solid #f0f0f0}
+      h2{margin:0 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#444}
+      table{width:100%;border-collapse:collapse;font-size:13px}
+      th,td{padding:8px 6px;border-bottom:1px solid #f3f3f3;text-align:left;vertical-align:top}
+      .pill{display:inline-block;padding:2px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:11px}
+      .warn{color:#9a3412}
+      .ft{padding:14px 22px;color:#888;font-size:11px;background:#fafafa}
+      ul{margin:8px 0 0 20px;padding:0}
+      li{margin:4px 0}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="hd">
+        <h1>Archivist Intelligence Report</h1>
+        <p>{{ run_type|upper }} · period {{ period_key }}</p>
+      </div>
+
+      <div class="sec">
+        <h2>Overview</h2>
+        <ul>
+          <li>Reports considered: {{ payload.metrics.reports_considered }}</li>
+          <li>Patterns upserted: {{ payload.metrics.patterns_upserted }}</li>
+          <li>Impact snapshots upserted: {{ payload.metrics.impacts_upserted }}</li>
+          <li>Outcome rows upserted: {{ payload.metrics.outcomes_upserted }}</li>
+          <li>Accuracy rows upserted: {{ payload.metrics.accuracy_rows_upserted }}</li>
+        </ul>
+      </div>
+
+      {% if human_summary_v2 %}
+      <div class="sec">
+        <h2>Executive Headline</h2>
+        {% if human_summary_v2.headline %}<p><strong>{{ human_summary_v2.headline }}</strong></p>{% endif %}
+        {% if human_summary_v2.plain_summary %}<p>{{ human_summary_v2.plain_summary }}</p>{% endif %}
+      </div>
+
+      <div class="sec">
+        <h2>What Changed</h2>
+        <ul>
+          {% for line in human_summary_v2.key_drivers or [] %}
+          <li>{{ line }}</li>
+          {% endfor %}
+          {% if not (human_summary_v2.key_drivers or []) %}
+          <li>No major archive trend shift identified in this cycle.</li>
+          {% endif %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="sec">
+        <h2>Accountability Scorecards</h2>
+        <table>
+          <thead><tr><th>Agent</th><th>Ticker</th><th>Samples</th><th>Accuracy %</th><th>Grade</th></tr></thead>
+          <tbody>
+            {% for row in payload.accuracy %}
+            <tr>
+              <td>{{ row.agent_name }}</td>
+              <td class="mono">{{ row.ticker }}</td>
+              <td>{{ row.sample_count }}</td>
+              <td>{{ row.accuracy_pct }}</td>
+              <td><span class="pill">{{ row.grade }}</span></td>
+            </tr>
+            {% endfor %}
+            {% if not payload.accuracy %}
+            <tr><td colspan="5">No accuracy rows available for this period.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sec">
+        <h2>Pattern Lifecycle</h2>
+        <table>
+          <thead><tr><th>Ticker</th><th>Pattern Type</th><th>Status</th><th>Occurrence</th><th>Accuracy %</th></tr></thead>
+          <tbody>
+            {% for row in payload.patterns %}
+            <tr>
+              <td class="mono">{{ row.ticker }}</td>
+              <td>{{ row.pattern_type }}</td>
+              <td><span class="pill">{{ row.status }}</span></td>
+              <td>{{ row.occurrence_count }}</td>
+              <td>{{ row.accuracy_pct }}</td>
+            </tr>
+            {% endfor %}
+            {% if not payload.patterns %}
+            <tr><td colspan="5">No active pattern rows for this run.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sec">
+        <h2>Impact Highlights</h2>
+        <table>
+          <thead><tr><th>Announcement Type</th><th>Samples</th><th>Avg 1D %</th><th>Positive Rate %</th><th>Negative Rate %</th></tr></thead>
+          <tbody>
+            {% for row in payload.impacts %}
+            <tr>
+              <td>{{ row.announcement_type }}</td>
+              <td>{{ row.sample_count }}</td>
+              <td>{{ row.avg_change_1d }}</td>
+              <td>{{ row.positive_rate }}</td>
+              <td>{{ row.negative_rate }}</td>
+            </tr>
+            {% endfor %}
+            {% if not payload.impacts %}
+            <tr><td colspan="5">No impact stats available for this run window.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sec">
+        <h2>Data Quality</h2>
+        <ul class="{% if payload.metrics.degraded %}warn{% endif %}">
+          {% if payload.metrics.degraded %}
+          <li>Generated in degraded mode due to missing upstream inputs.</li>
+          {% else %}
+          <li>All required upstream inputs were available.</li>
+          {% endif %}
+          {% for warning in payload.metrics.warnings %}
+          <li>{{ warning }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="ft">Informational output only. Not investment advice.</div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Light palette (default) ── */
+:root {
+  --surface: #f8fafc;
+  --elevated: #ffffff;
+  --inset: #f1f5f9;
+  --ink: #0f172a;
+  --ink-soft: #334155;
+  --muted: #64748b;
+  --ink-faint: #94a3b8;
+  --line: #cbd5e1;
+  --panel: #ffffff;
+  --panel-border: #e2e8f0;
+  --panel-soft: #f1f5f9;
+  --hover: #f1f5f9;
+  --sidebar-bg: rgba(255, 255, 255, 0.95);
+  --topbar-bg: rgba(255, 255, 255, 0.9);
+  --brand: #00d084;
+  --accent: #34d399;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+/* ── Dark palette ── */
+.dark {
+  --surface: #020817;
+  --elevated: #0f172a;
+  --inset: #020617;
+  --ink: #e2e8f0;
+  --ink-soft: #cbd5e1;
+  --muted: #94a3b8;
+  --ink-faint: #64748b;
+  --line: #334155;
+  --panel: #061226;
+  --panel-border: #1e293b;
+  --panel-soft: #0b1c34;
+  --hover: #1e293b;
+  --sidebar-bg: rgba(3, 11, 26, 0.95);
+  --topbar-bg: rgba(3, 11, 26, 0.9);
+  --brand: #00d084;
+  --accent: #34d399;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "IBM Plex Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Atmospheric gradient only in dark mode */
+.dark body {
+  background:
+    radial-gradient(1000px 520px at 100% -10%, #0f2a50 0%, transparent 62%),
+    radial-gradient(800px 420px at -10% 120%, #093828 0%, transparent 62%),
+    var(--surface);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}

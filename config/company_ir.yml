@@ -1,0 +1,62 @@
+version: 1
+companies:
+  - ticker: SCOM
+    company_name: Safaricom PLC
+    ir_url: https://www.safaricom.co.ke/investor-relations
+  - ticker: KCB
+    company_name: KCB Group Ltd
+    ir_url: https://ke.kcbgroup.com/investor-relations/
+  - ticker: EQTY
+    company_name: Equity Group Holdings
+    ir_url: https://equitygroupholdings.com/ke/investor-relations/
+  - ticker: EABL
+    company_name: East African Breweries Ltd
+    ir_url: https://www.eabl.com/investors
+  - ticker: BAT
+    company_name: British American Tobacco Kenya Ltd
+    ir_url: https://www.batkenya.com/investors
+  - ticker: ABSA
+    company_name: Absa Bank Kenya PLC
+    ir_url: https://www.absabank.co.ke/about-us/investor-relations/
+  - ticker: NCBA
+    company_name: NCBA Group PLC
+    ir_url: https://ke.ncbagroup.com/investor-relations/
+  - ticker: COOP
+    company_name: Co-operative Bank of Kenya
+    ir_url: https://www.co-opbank.co.ke/investor-relations/
+  - ticker: SCBK
+    company_name: Standard Chartered Bank Kenya
+    ir_url: https://www.sc.com/ke/investors/
+  - ticker: SBIC
+    company_name: Stanbic Holdings PLC
+    ir_url: https://www.stanbicbank.co.ke/kenya/personal/about-us/investor-relations
+  - ticker: DTK
+    company_name: Diamond Trust Bank Kenya Ltd
+    ir_url: https://dtbk.dtbafrica.com/investor-relations
+  - ticker: JUB
+    company_name: Jubilee Holdings Ltd
+    ir_url: https://jubileeholdings.com/investor-relations/
+  - ticker: KQ
+    company_name: Kenya Airways Ltd
+    ir_url: https://www.kenya-airways.com/en-ke/about-us/investor-relations/
+  - ticker: NMG
+    company_name: Nation Media Group
+    ir_url: https://www.nationmedia.com/investor-relations/
+  - ticker: BAMB
+    company_name: Bamburi Cement PLC
+    ir_url: https://www.bamburicement.com/investors/
+  - ticker: KPLC
+    company_name: Kenya Power & Lighting Co Ltd
+    ir_url: https://www.kplc.co.ke/content/item/44/investor-relations
+  - ticker: KEGN
+    company_name: KenGen Ltd
+    ir_url: https://www.kengen.co.ke/investor-relations
+  - ticker: KNRE
+    company_name: Kenya Re-Insurance Corporation Ltd
+    ir_url: https://www.kenyare.co.ke/investors/
+  - ticker: BRIT
+    company_name: Britam Holdings Ltd
+    ir_url: https://www.britam.com/investor-relations/
+  - ticker: CIC
+    company_name: CIC Insurance Group Ltd
+    ir_url: https://www.cic.co.ke/investor-relations/

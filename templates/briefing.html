@@ -1,0 +1,75 @@
+{% extends "email/base.html" %}
+{% import "email/components.html" as ui %}
+
+{% block title %}NSE Daily Briefing{% endblock %}
+{% block header_title %}NSE Daily Briefing{% endblock %}
+{% block header_subtitle %}{{ date }} · NASI {{ nasi_value }} ({{ nasi_pct }}%) · KES/USD {{ kes_usd }} · KES/EUR {{ kes_eur }}{% endblock %}
+
+{% block content %}
+  <div class="section">
+    {{ ui.section_header("Market Pulse", "Executive view for today") }}
+    {% if human_summary_v2.headline %}<p><strong>{{ human_summary_v2.headline }}</strong></p>{% endif %}
+    {% if human_summary_v2.plain_summary %}<p>{{ human_summary_v2.plain_summary }}</p>{% else %}<p>{{ summary }}</p>{% endif %}
+    {{ ui.confidence_badge('medium') }}
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Top Movers", "Largest observed changes") }}
+    {% if top_movers_chart_b64 %}
+      <img alt="Top movers" src="data:image/png;base64,{{ top_movers_chart_b64 }}" style="max-width:100%; border-radius:12px; border:1px solid #e5e7eb;" />
+    {% else %}
+      <p class="muted">No chart available for this run.</p>
+    {% endif %}
+    <ul class="bullet">
+      {% for row in rows[:8] %}
+      <li><strong>{{ row.ticker }}</strong> ({{ row.name }}) · {{ row.price }} · {{ row.pct_change }}%</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("What Changed", "Key market drivers") }}
+    <ul class="bullet">
+      {% for item in human_summary_v2.key_drivers or [] %}
+      <li>{{ item }}</li>
+      {% endfor %}
+      {% if not (human_summary_v2.key_drivers or []) %}
+      <li>No major change drivers were extracted for this cycle.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Risks & Next Watch", "Potential downside and what to monitor") }}
+    <p><strong>Risks</strong></p>
+    <ul class="bullet">
+      {% for item in human_summary_v2.risks or [] %}
+      <li>{{ item }}</li>
+      {% endfor %}
+      {% if not (human_summary_v2.risks or []) %}
+      <li>No elevated risk flags from current core inputs.</li>
+      {% endif %}
+    </ul>
+    <p><strong>Next watch</strong></p>
+    <ul class="bullet">
+      {% for item in human_summary_v2.next_watch or [] %}
+      <li>{{ item }}</li>
+      {% endfor %}
+      {% if not (human_summary_v2.next_watch or []) %}
+      <li>Continue monitoring core channels for early shifts.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="section">
+    {{ ui.section_header("Read More", "Direct links from today's feed") }}
+    <ul class="source-list">
+      {% for item in headlines %}
+      <li><a href="{{ item.url }}">{{ item.headline }}</a></li>
+      {% endfor %}
+      {% if not headlines %}
+      <li class="muted">No headlines captured.</li>
+      {% endif %}
+    </ul>
+  </div>
+{% endblock %}

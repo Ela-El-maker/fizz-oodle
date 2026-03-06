@@ -1,0 +1,661 @@
+version: 1
+defaults:
+  request_timeout_seconds: 30
+  max_retries: 3
+  backoff_base_seconds: 2
+  per_domain_min_delay_seconds: 2
+sources:
+  - source_id: reddit_rss
+    type: rss
+    base_url: https://www.reddit.com/r/Kenya+NSE+AfricaBusiness+stocks/new/.rss
+    enabled_by_default: true
+    parser: reddit_praw.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 1.0
+    requires_auth: false
+
+  - source_id: google_news_ke_markets
+    type: news
+    base_url: https://news.google.com/rss/search?q=NSE+Kenya+stocks+OR+%22Nairobi+Securities+Exchange%22+when:7d&hl=en-KE&gl=KE&ceid=KE:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 1.0
+    requires_auth: false
+
+  - source_id: google_news_ke_companies
+    type: news
+    base_url: https://news.google.com/rss/search?q=Safaricom+OR+KCB+OR+%22Equity+Bank%22+OR+NCBA+OR+EABL+when:7d&hl=en-KE&gl=KE&ceid=KE:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 1.0
+    requires_auth: false
+
+  - source_id: bbc_business_rss
+    type: news
+    base_url: https://feeds.bbci.co.uk/news/business/rss.xml
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 0.6
+    requires_auth: false
+
+  - source_id: business_daily_rss
+    type: rss
+    base_url: https://www.businessdailyafrica.com/bd/markets/rss
+    enabled_by_default: false
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 0.8
+    requires_auth: false
+
+  - source_id: the_star_business_rss
+    type: rss
+    base_url: https://www.the-star.co.ke/business/rss/
+    enabled_by_default: false
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 0.7
+    requires_auth: false
+
+  - source_id: standard_business_rss
+    type: rss
+    base_url: https://www.standardmedia.co.ke/rss/business.php
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 0.7
+    requires_auth: false
+
+  - source_id: google_news_ke_banking
+    type: news
+    base_url: https://news.google.com/rss/search?q=KCB+OR+%22Equity+Bank%22+OR+%22Co-op+Bank%22+OR+NCBA+Kenya+banking+when:7d&hl=en-KE&gl=KE&ceid=KE:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 0.9
+    requires_auth: false
+
+  - source_id: google_news_ke_dividends
+    type: news
+    base_url: https://news.google.com/rss/search?q=Kenya+NSE+dividend+OR+%22book+closure%22+OR+earnings+when:7d&hl=en-KE&gl=KE&ceid=KE:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 3
+    backoff_base: 2
+    rate_limit_rps: 0.5
+    weight: 0.9
+    requires_auth: false
+
+  - source_id: x_search_api
+    type: api
+    base_url: https://api.x.com/2/tweets/search/recent
+    enabled_by_default: true
+    parser: x_dual.collect
+    timeout_secs: 20
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.9
+    requires_auth: false
+    auth_env_key: X_API_BEARER_TOKEN
+
+  - source_id: youtube_api
+    type: api
+    base_url: https://www.googleapis.com/youtube/v3/search
+    enabled_by_default: true
+    parser: youtube_api.collect
+    timeout_secs: 20
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.6
+    requires_auth: true
+    auth_env_key: YOUTUBE_API_KEY
+
+  - source_id: mystocks_forum
+    type: html
+    base_url: https://live.mystocks.co.ke/discussions
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 25
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.8
+    requires_auth: false
+
+  - source_id: stockswatch_forum
+    type: html
+    base_url: https://stockswatch.co.ke/
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 25
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.8
+    requires_auth: false
+
+  - source_id: business_daily_comments
+    type: html
+    base_url: https://www.businessdailyafrica.com/bd/markets
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 25
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.25
+    weight: 0.7
+    requires_auth: false
+
+  - source_id: standardmedia_comments
+    type: html
+    base_url: https://www.standardmedia.co.ke/business
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 25
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.25
+    weight: 0.7
+    requires_auth: false
+
+  - source_id: eia_oil_theme_rss
+    type: rss
+    base_url: https://www.eia.gov/rss/todayinenergy.xml
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.9
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: commodity
+    theme: oil
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.95
+
+  - source_id: global_oil_theme_rss
+    type: news
+    base_url: https://news.google.com/rss/search?q=oil+prices+OR+brent+OR+crude+shipping+when:7d&hl=en&gl=US&ceid=US:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.85
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: commodity
+    theme: oil
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.85
+
+  - source_id: global_usd_theme_rss
+    type: news
+    base_url: https://news.google.com/rss/search?q=US+dollar+index+OR+Federal+Reserve+OR+Fed+rates+OR+forex+when:7d&hl=en&gl=US&ceid=US:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.9
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: macro
+    theme: usd_strength
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.9
+
+  - source_id: global_ai_theme_rss
+    type: news
+    base_url: https://news.google.com/rss/search?q=OpenAI+OR+DeepMind+OR+Anthropic+OR+AI+model+release+OR+AI+infrastructure+when:7d&hl=en&gl=US&ceid=US:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.8
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: ai_tech
+    theme: ai_platforms
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.7
+
+  - source_id: global_bonds_theme_rss
+    type: news
+    base_url: https://news.google.com/rss/search?q=US+Treasury+yields+OR+bond+yields+OR+sovereign+bonds+when:7d&hl=en&gl=US&ceid=US:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.8
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: macro
+    theme: bonds_yields
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.85
+
+  - source_id: global_earnings_dividends_theme_rss
+    type: news
+    base_url: https://news.google.com/rss/search?q=global+earnings+OR+dividends+OR+guidance+OR+profit+warning+when:7d&hl=en&gl=US&ceid=US:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.75
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: global_market
+    theme: earnings_cycle
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.75
+
+  - source_id: global_equities_trading_theme_rss
+    type: news
+    base_url: https://news.google.com/rss/search?q=global+stocks+OR+major+indices+OR+equities+trading+OR+risk+off+when:7d&hl=en&gl=US&ceid=US:en
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.8
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: global_market
+    theme: global_equities_trading
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.8
+
+  - source_id: google_research_blog
+    type: html
+    base_url: https://research.google/blog/
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.7
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: ai_tech
+    theme: ai_research
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.55
+
+  - source_id: google_deepmind_blog
+    type: html
+    base_url: https://deepmind.google/blog/
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.7
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: ai_tech
+    theme: ai_platforms
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.65
+
+  - source_id: anthropic_news
+    type: html
+    base_url: https://www.anthropic.com/news
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.7
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: ai_tech
+    theme: ai_platforms
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.65
+
+  - source_id: wsj_finance
+    type: news
+    base_url: https://www.wsj.com/finance
+    enabled_by_default: false
+    parser: rss_news.collect
+    timeout_secs: 25
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.7
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: macro
+    theme: global_macro
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.75
+    premium: true
+    disabled_reason: premium_source
+
+  - source_id: reuters_business_global
+    type: html
+    base_url: https://www.reuters.com/business/
+    enabled_by_default: false
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.75
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: news_signal
+    theme: fast_macro_news
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.75
+    disabled_reason: blocked_401
+
+  - source_id: theonlinekenyan_feed
+    type: rss
+    base_url: https://theonlinekenyan.com/feed
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.3
+    weight: 0.7
+    requires_auth: false
+    scope: global_outside
+    market_region: africa
+    signal_class: news_signal
+    theme: global_macro
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.7
+
+  - source_id: kenyans_sitemap_news
+    type: sitemap
+    base_url: https://www.kenyans.co.ke/sitemap.xml
+    enabled_by_default: true
+    parser: sitemap_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.8
+    requires_auth: false
+    scope: kenya_extended
+    market_region: kenya
+    signal_class: news_signal
+    theme: kenya_business_news
+
+  - source_id: pulse_ke_sitemap_news
+    type: sitemap
+    base_url: https://www.pulse.co.ke/sitemap-articles-time-limited-index.xml
+    enabled_by_default: true
+    parser: sitemap_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.75
+    requires_auth: false
+    scope: kenya_extended
+    market_region: kenya
+    signal_class: news_signal
+    theme: kenya_business_news
+
+  - source_id: infoworld_feed
+    type: rss
+    base_url: https://www.infoworld.com/feed
+    enabled_by_default: true
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.25
+    weight: 0.65
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: ai_tech
+    theme: global_tech_risk
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.65
+
+  - source_id: durovscode_site
+    type: html
+    base_url: https://durovscode.com/
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.55
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: ai_tech
+    theme: ai_platforms
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.55
+
+  - source_id: investing_major_indices
+    type: html
+    base_url: https://www.investing.com/indices/major-indices
+    enabled_by_default: true
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 2
+    backoff_base: 2
+    rate_limit_rps: 0.2
+    weight: 0.6
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: global_market
+    theme: global_equities_trading
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.7
+
+  - source_id: tuko_sitemap_news
+    type: sitemap
+    base_url: https://www.tuko.co.ke/tuko/sitemap/www/sitemap.xml
+    enabled_by_default: false
+    parser: sitemap_news.collect
+    timeout_secs: 30
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.6
+    requires_auth: false
+    scope: kenya_extended
+    market_region: kenya
+    signal_class: news_signal
+    theme: kenya_business_news
+    disabled_reason: blocked_405
+
+  - source_id: african_business_feed
+    type: rss
+    base_url: https://african.business/feed
+    enabled_by_default: false
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.65
+    requires_auth: false
+    scope: global_outside
+    market_region: africa
+    signal_class: news_signal
+    theme: global_macro
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.6
+    disabled_reason: blocked_403
+
+  - source_id: businessdaily_sitemap_news
+    type: sitemap
+    base_url: https://www.businessdailyafrica.com/bd/sitemap.xml
+    enabled_by_default: false
+    parser: sitemap_news.collect
+    timeout_secs: 30
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.75
+    requires_auth: false
+    scope: kenya_extended
+    market_region: kenya
+    signal_class: news_signal
+    theme: kenya_business_news
+    disabled_reason: blocked_403
+
+  - source_id: openai_news
+    type: html
+    base_url: https://openai.com/news/
+    enabled_by_default: false
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.7
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: ai_tech
+    theme: ai_platforms
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.7
+    disabled_reason: blocked_403
+
+  - source_id: nasdaq_global_indexes
+    type: html
+    base_url: https://www.nasdaq.com/market-activity/indexes
+    enabled_by_default: false
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.6
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: global_market
+    theme: global_equities_trading
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.7
+    disabled_reason: unstable_timeout
+
+  - source_id: investing_world_indices
+    type: html
+    base_url: https://www.investing.com/indices/world-indices
+    enabled_by_default: false
+    parser: html_discussion.collect
+    timeout_secs: 30
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.65
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: global_market
+    theme: global_risk
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.65
+    disabled_reason: blocked_403
+
+  - source_id: eia_press_releases
+    type: rss
+    base_url: https://www.eia.gov/rss/press_releases.xml
+    enabled_by_default: false
+    parser: rss_news.collect
+    timeout_secs: 30
+    retries: 1
+    backoff_base: 2
+    rate_limit_rps: 0.1
+    weight: 0.85
+    requires_auth: false
+    scope: global_outside
+    market_region: global
+    signal_class: commodity
+    theme: oil
+    primary_use: CF
+    kenya_impact_enabled: true
+    kenya_impact_weight: 0.85
+    disabled_reason: upstream_404

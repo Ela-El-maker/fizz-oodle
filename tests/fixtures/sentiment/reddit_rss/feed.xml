@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Reddit Sample</title>
+  <entry>
+    <title>Safaricom outlook discussion</title>
+    <updated>2026-03-01T08:30:00Z</updated>
+    <author><name>user1</name></author>
+    <content>Safaricom shows bullish growth momentum.</content>
+    <link href="https://www.reddit.com/r/Kenya/comments/abc123/safaricom/?utm_source=test"/>
+  </entry>
+</feed>
