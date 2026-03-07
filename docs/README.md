@@ -1,16 +1,33 @@
 # Documentation Index
 
-This directory documents the production behavior of the Market Intel Platform.
+Comprehensive documentation for the Market Intelligence Platform — a six-agent autonomous system tracking 67 companies across African equity markets.
 
-- [architecture.md](architecture.md): service topology, runtime boundaries, data ownership
-- [agents.md](agents.md): A–F agent responsibilities, workflows, failure modes
-- [scheduler.md](scheduler.md): schedule loading, dispatch loop, overlap/jitter, ops tasks
-- [runledger.md](runledger.md): run/event persistence, reconciliation, monitor APIs
-- [scraping-system.md](scraping-system.md): connectors, breaker/retry, source taxonomy
-- [data-flow.md](data-flow.md): end-to-end movement from sources to dashboard/emails
-- [api.md](api.md): gateway and service API surfaces used by operators/UI
-- [ui.md](ui.md): Next.js app structure, pages, auth, data integration
-- [deployment.md](deployment.md): local/container deployment and ops conventions
-- [troubleshooting.md](troubleshooting.md): common failures and fix runbooks
-- [contributing.md](contributing.md): contribution workflow and quality checks
-- [canonical/INTERFACE_CONTRACT.md](canonical/INTERFACE_CONTRACT.md): schedule task contract registry
+## System Design
+
+- **[Architecture](architecture.md)** — Service topology, database isolation, event bus, resilience model, data ownership
+- **[Agents](agents.md)** — Deep documentation for all six agents (A–F): pipelines, config flags, models, failure modes
+- **[Data Flow](data-flow.md)** — End-to-end data movement from external sources through synthesis to delivery
+
+## Core Services
+
+- **[Scheduler](scheduler.md)** — Schedule loading, dispatch loop, overlap guard, jitter, timezone handling
+- **[Run Ledger](runledger.md)** — Run/event persistence, stale reconciliation, monitor APIs
+
+## Data Collection
+
+- **[Scraping System](scraping-system.md)** — Collection modes, HTTP client, circuit breaker, source taxonomy, deduplication
+
+## Interfaces
+
+- **[API Reference](api.md)** — Complete REST and WebSocket API surface (80+ endpoints), authentication, rate limiting
+- **[Dashboard UI](ui.md)** — Next.js application: pages, widgets, theming, auth flow, WebSocket integration
+
+## Operations
+
+- **[Deployment](deployment.md)** — Docker Compose environments, Nginx/TLS, monitoring stack, operational scripts
+- **[Troubleshooting](troubleshooting.md)** — 12 common failure scenarios with diagnostic commands and fixes
+- **[Contributing](contributing.md)** — Development setup, quality gates (225 tests), coding conventions
+
+## Reference
+
+- **[canonical/INTERFACE_CONTRACT.md](canonical/INTERFACE_CONTRACT.md)** — Schedule task contract registry

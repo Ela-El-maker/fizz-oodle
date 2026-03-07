@@ -1,85 +1,142 @@
 # RunLedger
 
-## Purpose
+## Overview
 
-RunLedger (`services/run_ledger/main.py`) is the central run and timeline ledger.
+The RunLedger service (`services/run_ledger/main.py`, port 8011, database `db_platform_ops`) is the central operational ledger for the platform. It consumes events from Redis Streams, persists the complete run lifecycle timeline, reconciles stale runs, tracks email validation, and exposes the scheduler monitor API surface.
 
-It consumes run commands/events from Redis and stores operational truth for:
+RunLedger is the **single source of truth** for whether an agent run happened, when it happened, and what its outcome was.
 
-- run lifecycle
-- scheduler dispatch history
-- retry and timeline events
-- email validation tracking
-- autonomy/healing/self-mod state views
+## Core Responsibilities
 
-## Streams consumed
+### 1. Run Command Persistence
 
-- `commands.run.v1` (`RunCommandV1`)
-- `runs.events.v1` (`RunEventV1`)
+Consumes `RunCommandV1` messages from `commands.run.v1` stream:
 
-Consumer groups:
+- Upserts into `run_commands` table
+- Creates timeline event: `run_command_queued`
+- Links command to schedule key and trigger type
 
-- `commands:ledger`
-- `runs:ledger`
+### 2. Run Event Persistence
 
-## Core responsibilities
+Consumes `RunEventV1` messages from `runs.events.v1` stream:
 
-### 1) Persist run commands
+- Upserts into `agent_runs` table
+- Links lifecycle back to latest command for the run
+- Creates timeline events: `run_running`, `run_success`, `run_partial`, `run_fail`
+- Records metrics payload (records processed, errors, custom agent metrics)
 
-- Upsert `run_commands`
-- Create timeline event `run_command_queued`
+### 3. Stale Run Reconciliation
 
-### 2) Persist run events
+A background loop checks for runs stuck in `running` status beyond per-agent TTLs:
 
-- Upsert `agent_runs`
-- Link lifecycle back to latest command for run
-- Create timeline event `run_{status}`
+| Agent | Stale TTL |
+|---|---|
+| Announcements (B) | 20 minutes |
+| Briefing (A) | 30 minutes |
+| Analyst (D) | 30 minutes |
+| Narrator (F) | 30 minutes |
+| Sentiment (C) | 45 minutes |
+| Archivist (E) | 45 minutes |
 
-### 3) Reconcile stale runs
+When a stale run is detected:
 
-Background loop checks `running` runs older than per-agent TTL and marks them failed with:
+1. Marks run as `fail` with `error_message=stale_run_timeout`
+2. Sets `metrics.stale_reconciled=true`
+3. Records a healing incident
+4. Emits an `OpsHealingAppliedV1` system event
+5. Creates timeline event: `run_stale_reconciled`
 
-- `error_message=stale_run_timeout`
-- `metrics.stale_reconciled=true`
+**Configuration**: `STALE_RUN_RECONCILER_ENABLED=True`, interval 60 seconds.
 
-Also records healing incidents and emits healing/system events.
+### 4. Email Validation Tracking
 
-### 4) Retry controls
+Tracks SMTP provider health through validation runs:
 
-- `POST /scheduler/control/retry/{run_id}`
-- Internal retry endpoint for scheduler/automation
+- `email_validation_runs` table: validation run records
+- `email_validation_steps` table: per-step results within each validation
+- Exposed via `GET /email-validation/latest` for dashboard display
 
-Retries publish a new `RunCommandV1` with `trigger_type=retry`.
+### 5. Self-Modification Integration
 
-### 5) Scheduler monitor APIs
+Persists operational intelligence tables:
 
-Provides data for ops dashboard:
+- `autonomy_state`: Current autonomy level and state
+- `healing_incidents`: Recorded healing actions
+- `learning_summaries`: Aggregated operational learnings
+- `self_mod_proposals`: Proposed configuration changes
+- `self_mod_actions`: Applied modification actions
 
-- `/scheduler/monitor/status`
-- `/scheduler/monitor/active`
-- `/scheduler/monitor/upcoming`
-- `/scheduler/monitor/history`
-- `/scheduler/monitor/pipeline`
-- `/scheduler/monitor/email`
-- `/scheduler/monitor/events`
-- `/scheduler/monitor/heatmap`
-- `/scheduler/monitor/impact`
-- `/scheduler/monitor/snapshot`
+## Streams Consumed
 
-### 6) Email validation lifecycle
+| Stream | Consumer Group | Purpose |
+|---|---|---|
+| `commands.run.v1` | `commands:ledger` | Run commands from scheduler/gateway |
+| `runs.events.v1` | `runs:ledger` | Run lifecycle events from agent services |
 
-Tracks validation runs and per-agent steps via internal endpoints and exposes latest status for dashboard.
+## Background Tasks
 
-## Key tables
+RunLedger runs four background tasks during its FastAPI lifespan:
 
-- `agent_runs`
-- `run_commands`
-- `scheduler_dispatches`
-- `scheduler_timeline_events`
-- `email_validation_runs`
-- `email_validation_steps`
-- `healing_incidents`, `autonomy_states`, `learning_summaries`, self-mod tables
+1. **Command consumer** - reads `commands.run.v1` stream, persists run commands
+2. **Event consumer** - reads `runs.events.v1` stream, persists run events and timeline
+3. **Stale reconciler** - checks for and resolves stuck runs (60-second interval)
+4. **Self-mod loop** - background self-modification recomputation (900-second interval, when enabled)
 
-## Health endpoint
+## Database Tables
 
-- `GET /internal/health`
+| Table | Purpose |
+|---|---|
+| `agent_runs` | Run execution records (status, timing, metrics) |
+| `run_commands` | Dispatched command records (trigger type, schedule key) |
+| `scheduler_dispatches` | Scheduler dispatch log entries |
+| `scheduler_timeline_events` | Timeline of all scheduler/run events |
+| `email_validation_runs` | Email validation run records |
+| `email_validation_steps` | Per-step validation results |
+| `healing_incidents` | Recorded healing actions (stale reconciliation, etc.) |
+| `autonomy_state` | Current operational autonomy state |
+| `learning_summaries` | Aggregated operational learnings |
+| `self_mod_proposals` | Proposed configuration changes |
+| `self_mod_actions` | Applied modification actions |
+
+## Scheduler Monitor APIs
+
+The RunLedger exposes the scheduler monitoring surface (proxied through gateway at `/scheduler/monitor/*`):
+
+| Endpoint | Purpose |
+|---|---|
+| `/scheduler/monitor/status` | Current scheduler and run statuses |
+| `/scheduler/monitor/active` | Currently running agents |
+| `/scheduler/monitor/upcoming` | Next scheduled dispatches |
+| `/scheduler/monitor/history` | Recent run history |
+| `/scheduler/monitor/pipeline` | Pipeline health across all agents |
+| `/scheduler/monitor/email` | Email delivery tracking |
+| `/scheduler/monitor/events` | Recent timeline events |
+| `/scheduler/monitor/heatmap` | Run frequency heatmap data |
+| `/scheduler/monitor/impact` | Impact analysis of recent runs |
+| `/scheduler/monitor/snapshot` | Complete operational snapshot (used by dashboard and WebSocket) |
+
+## Retry Controls
+
+Operators can retry failed runs:
+
+- `POST /scheduler/control/retry/{run_id}` - publishes a new `RunCommandV1` with `trigger_type=retry`
+- Retry commands are consumed by the original agent service and re-execute the pipeline
+
+## Prometheus Metrics
+
+RunLedger exposes standard HTTP metrics via `services/common/metrics.py`:
+
+- `http_requests_total` - counter by service, method, path, status code
+- `http_request_duration_seconds` - histogram of request latencies
+- Available at `GET /metrics`
+
+## Health Endpoint
+
+- `GET /internal/health` - returns service health status (requires internal API key)
+
+## Reliability Notes
+
+- RunLedger uses SQLAlchemy async with `asyncpg` for non-blocking database operations
+- Stream consumers use `XREADGROUP` with acknowledgement for at-least-once processing
+- Consumer reconnection uses exponential backoff on Redis failures
+- The stale reconciler is idempotent - marking an already-failed run as failed is a no-op
